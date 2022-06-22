@@ -1,0 +1,42 @@
+---
+title: "GPT-3 generate feature matrix"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(vegan)
+library(lsa)
+library(ape)
+library(RColorBrewer)
+setwd("/Users/kushin/Downloads") ### replace this with the location of where you save this r notebook
+
+df <- read.csv('GPT_3_feature_df.csv',header=TRUE) ### replace this with the excel sheet you can download from google sheets (as a csv)
+
+
+### create a new column for each feature and get the average number of counts per concept
+feat_mat <- df%>%select('Concept','Feature')%>%group_by(Concept,Feature)%>%summarize(count=n())%>%pivot_wider(id_cols = Concept,names_from = Feature, values_from = count,values_fn = sum, values_fill = 0)
+
+
+```
+
+
+```{r}
+mypalette<-brewer.pal(256,"OrRd") ### pick a color palette
+###show feature matrix
+feat_mat_nums<-as.matrix(feat_mat[,2:ncol(feat_mat)])
+cor_mat<-1 - cosine(t(feat_mat_nums)) 
+
+rownames(cor_mat)<-feat_mat$Concept
+colnames(cor_mat)<-feat_mat$Concept
+
+heatmap(cor_mat,xlab="", ylab="", main="Feature dissimilarity matrix",Colv = NA, Rowv = NA,col = mypalette)
+
+```
+
+
+
+
+
+
